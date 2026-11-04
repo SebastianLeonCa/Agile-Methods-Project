@@ -1,20 +1,16 @@
 import { Suspense } from "react";
-import Header from "@/components/Header";
 import SpotExplorer, { MapLoading } from "@/components/SpotExplorer";
 import { createClient } from "@/lib/supabase/server";
 import type { Spot } from "@/lib/types";
 
 export default function Home() {
   return (
-    <div className="flex h-dvh flex-col">
-      <Header />
-      <main className="relative min-h-0 flex-1">
-        {/* Spots are fetched fresh on every request; the header is static. */}
-        <Suspense fallback={<MapLoading />}>
-          <Spots />
-        </Suspense>
-      </main>
-    </div>
+    <main className="relative h-full">
+      {/* Spots are fetched fresh on every request. */}
+      <Suspense fallback={<MapLoading />}>
+        <Spots />
+      </Suspense>
+    </main>
   );
 }
 

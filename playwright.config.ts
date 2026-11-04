@@ -10,6 +10,8 @@ const PORT = 3000;
 export default defineConfig({
   testDir: "./tests/e2e",
   forbidOnly: !!process.env.CI,
+  // One at a time: logged-in tests share a single test user, so parallel runs would overwrite each other.
+  workers: 1,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {

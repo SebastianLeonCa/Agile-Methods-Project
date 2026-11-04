@@ -21,3 +21,13 @@ export type Spot = {
   created_at: string;
   updated_at: string;
 };
+
+export type Profile = {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  home_area: string | null;
+  home_lat: number | null;
+  home_lng: number | null;
+  created_at: string;
+};

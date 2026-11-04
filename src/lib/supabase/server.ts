@@ -18,7 +18,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
             // Called from a Server Component, where cookies are read-only.
-            // The session is refreshed by the middleware instead (Sprint 2).
+            // The session is refreshed in src/proxy.ts instead.
           }
         },
       },

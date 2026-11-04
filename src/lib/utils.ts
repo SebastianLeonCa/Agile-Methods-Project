@@ -30,3 +30,16 @@ export const STATUS_LABEL: Record<SpotStatus, string> = {
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
 }
+
+/** Pages that need a logged-in user (checked in src/proxy.ts). */
+const PROTECTED_PATHS = ["/profile", "/dashboard", "/spots/new", "/events/new"];
+
+export function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) || pathname.endsWith("/edit");
+}
+
+/** Only allow redirects to paths on this site (blocks "//evil.com" and absolute URLs). */
+export function safeNextPath(next: string | null | undefined, fallback = "/"): string {
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;
+  return next;
+}

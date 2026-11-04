@@ -39,7 +39,11 @@ supabase/migrations/       numbered SQL files (0001_spots.sql, ...), applied by 
 supabase/seed.sql          sample data
 src/app/                   routes (App Router); page.tsx = home (the map)
 src/components/            UI components
-src/lib/supabase/          client.ts (browser), server.ts (server), middleware.ts (session refresh)
+src/proxy.ts               Next 16's renamed middleware: refreshes the Supabase session, guards protected pages
+src/lib/supabase/          client.ts (browser), server.ts (server), middleware.ts (session refresh, used by proxy.ts)
+src/lib/auth.ts            getCurrentProfile() for server components
+src/lib/validation.ts      form validation (shared by server actions and unit tests)
+src/lib/image.ts           browser-side image compression before upload
 src/lib/types.ts           TS types matching the DB
 tests/unit/                Vitest tests (*.test.ts[x])
 tests/e2e/                 Playwright tests (*.spec.ts), run at desktop + 375px mobile viewport
@@ -58,6 +62,12 @@ Folders are created in the sprint that first needs them.
   `<Suspense>` (see `src/app/page.tsx`). Use `@/lib/supabase/server` on the server, `@/lib/supabase/client` in the browser.
 - Map: `LitterMap` is loaded via `next/dynamic` with `ssr: false` from a client component (`SpotExplorer`).
   Pins are `L.divIcon` emojis (`spotIcon()` in `src/lib/utils.ts`); don't set `transform` on `.spot-pin` (Leaflet uses it).
+- Auth: Supabase email + password. Forms use Server Actions + `useActionState` (`src/app/auth/actions.ts`).
+  Email confirmation lands on `/auth/confirm` (handles the default `?code=` link and `?token_hash=`).
+  Protected paths are listed in `isProtectedPath()` (`src/lib/utils.ts`); pages also re-check the user.
+- Storage: bucket `spot-photos`, path `<user_id>/<uuid>.jpg`; compress with `compressImage()` before upload.
+- Free Supabase email sends only a few emails/hour: create test users in the dashboard with "Auto Confirm".
+  The logged-in e2e test needs `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` (`.env.local` locally, GitHub secrets in CI).
 - Mobile first: everything must work at 375px wide and on desktop.
 - Simple, readable code; few files, few libraries.
 - Definition of Done: works on the Vercel URL; lint, typecheck, test, build pass; has a test; CI green.

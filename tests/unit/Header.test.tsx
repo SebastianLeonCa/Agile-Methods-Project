@@ -1,0 +1,11 @@
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
+import Header from "@/components/Header";
+
+describe("Header", () => {
+  it("shows the app name and slogan", () => {
+    render(<Header />);
+    expect(screen.getByRole("heading", { level: 1, name: "CleanUp Map" })).toBeInTheDocument();
+    expect(screen.getByText("See it. Map it. Clean it. Together.")).toBeInTheDocument();
+  });
+});

@@ -1,10 +1,10 @@
 import type { Spot, SpotStatus, SpotType, Urgency } from "@/lib/types";
 
-const URGENCY_ICON: Record<Urgency, string> = { low: "🟢", medium: "🟡", high: "🔴" };
+export type PinVariant = Urgency | "clean";
 
-/** Map pin emoji: clean spots show ✅, others show their urgency color. */
-export function spotIcon(spot: Pick<Spot, "urgency" | "status">): string {
-  return spot.status === "clean" ? "✅" : URGENCY_ICON[spot.urgency];
+/** Pin color: clean spots are "clean" (blue + check), others use their urgency color. */
+export function pinVariant(spot: Pick<Spot, "urgency" | "status">): PinVariant {
+  return spot.status === "clean" ? "clean" : spot.urgency;
 }
 
 export const TYPE_LABEL: Record<SpotType, string> = {
@@ -38,8 +38,15 @@ export function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/")) || pathname.endsWith("/edit");
 }
 
+/** Where users land after logging in or confirming their email. */
+export const HOME_AFTER_LOGIN = "/map";
+
 /** Only allow redirects to paths on this site (blocks "//evil.com" and absolute URLs). */
-export function safeNextPath(next: string | null | undefined, fallback = "/"): string {
+export function safeNextPath(next: string | null | undefined, fallback = HOME_AFTER_LOGIN): string {
   if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;
   return next;
+}
+
+export function cn(...classes: (string | false | null | undefined)[]): string {
+  return classes.filter(Boolean).join(" ");
 }

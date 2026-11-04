@@ -1,3 +1,4 @@
+import { UserRound } from "lucide-react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -9,8 +10,8 @@ export const metadata: Metadata = { title: "My profile · CleanUp Map" };
 
 export default function ProfilePage() {
   return (
-    <Card title="My profile">
-      <Suspense fallback={<p className="text-zinc-500">Loading your profile…</p>}>
+    <Card title="My profile" subtitle="How neighbors see you, and where you call home." icon={<UserRound className="size-5" aria-hidden />} wide>
+      <Suspense fallback={<p className="text-sm text-muted">Loading your profile…</p>}>
         <ProfileLoader />
       </Suspense>
     </Card>

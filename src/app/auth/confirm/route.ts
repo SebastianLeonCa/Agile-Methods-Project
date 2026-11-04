@@ -11,7 +11,7 @@ import { safeNextPath } from "@/lib/utils";
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const next = safeNextPath(searchParams.get("next"), "/profile");
+  const next = safeNextPath(searchParams.get("next"));
   const go = (path: string) => NextResponse.redirect(new URL(path, request.url));
 
   // Expired or already-used link: Supabase sends us an error instead of a code.
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     // Supabase only issues a code after confirming the email, so a failed exchange still means "confirmed".
-    return go(error ? "/login?message=confirmed" : next);
+    return go(error ? `/login?message=confirmed&next=${encodeURIComponent(next)}` : next);
   }
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });

@@ -1,11 +1,12 @@
 "use client";
 
+import { Camera, House, Trash2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useActionState, useState } from "react";
 import { updateProfile, type ProfileState } from "@/app/profile/actions";
 import Avatar from "@/components/Avatar";
 import type { LatLng } from "@/components/LocationPicker";
-import { Alert, buttonClass, Field, inputClass } from "@/components/ui";
+import { Alert, buttonClass, Field, inputClass, secondaryButtonClass } from "@/components/ui";
 import { compressImage } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/types";
@@ -13,7 +14,7 @@ import { USERNAME_HINT } from "@/lib/validation";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
-  loading: () => <div className="h-56 w-full animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />,
+  loading: () => <div className="h-60 w-full animate-pulse rounded-xl bg-surface" />,
 });
 
 export default function ProfileForm({ profile }: { profile: Profile }) {
@@ -49,20 +50,21 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <form action={formAction} noValidate className="space-y-6">
+    <form action={formAction} noValidate className="space-y-8">
       {state.message && <Alert kind="error">{state.message}</Alert>}
       {state.saved && !pending && <Alert kind="success">Profile saved ✓</Alert>}
 
-      <div className="flex items-center gap-4">
-        <Avatar profile={{ username: username || profile.username, avatar_url: avatarUrl || null }} size={72} />
-        <div className="space-y-1">
-          <label className={`${buttonClass} cursor-pointer`}>
+      <div className="flex items-center gap-5">
+        <Avatar profile={{ username: username || profile.username, avatar_url: avatarUrl || null }} size={80} />
+        <div className="space-y-2">
+          <label className={`${secondaryButtonClass} cursor-pointer focus-within:ring-4 focus-within:ring-brand/20`}>
+            <Camera className="size-4" aria-hidden />
             {uploading ? "Uploading…" : "Change photo"}
             <input type="file" accept="image/*" onChange={onPhotoChange} disabled={uploading} className="sr-only" />
           </label>
           {avatarUrl && (
-            <button type="button" onClick={() => setAvatarUrl("")} className="block text-sm text-zinc-500 underline">
-              Remove photo
+            <button type="button" onClick={() => setAvatarUrl("")} className="flex items-center gap-1.5 text-sm text-muted hover:text-ink">
+              <Trash2 className="size-3.5" aria-hidden /> Remove photo
             </button>
           )}
           {(uploadError || errors.avatar) && <p className="text-sm text-red-700">{uploadError || errors.avatar}</p>}
@@ -70,34 +72,37 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       </div>
       <input type="hidden" name="avatarUrl" value={avatarUrl} />
 
-      <Field label="Username" name="username" error={errors.username} hint={USERNAME_HINT}>
-        <input id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)}
-          aria-invalid={!!errors.username} className={inputClass} />
-      </Field>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label="Username" name="username" error={errors.username} hint={USERNAME_HINT}>
+          <input id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)}
+            aria-invalid={!!errors.username} className={inputClass} />
+        </Field>
+        <Field label="Home area" name="homeArea" error={errors.homeArea} hint="e.g. Oakland, Squirrel Hill, Shadyside">
+          <input id="homeArea" name="homeArea" defaultValue={profile.home_area ?? ""} maxLength={100} className={inputClass} />
+        </Field>
+      </div>
 
-      <Field label="Home area" name="homeArea" error={errors.homeArea} hint="e.g. Oakland, Squirrel Hill, Shadyside">
-        <input id="homeArea" name="homeArea" defaultValue={profile.home_area ?? ""} maxLength={100} className={inputClass} />
-      </Field>
-
-      <div className="space-y-1">
-        <p className="text-sm font-medium">Home location</p>
-        <p className="text-xs text-zinc-500">
-          Tap the map to place your home pin; drag it to adjust. Used to show cleanups near you.
-        </p>
+      <fieldset className="space-y-2">
+        <legend className="flex items-center gap-2 text-sm font-medium">
+          <House className="size-4 text-brand" aria-hidden /> Home location
+        </legend>
+        <p className="text-xs text-muted">Tap the map to place your home pin, then drag it to adjust. Used to show cleanups near you.</p>
         <LocationPicker value={home} onChange={setHome} />
         <input type="hidden" name="homeLat" value={home?.lat ?? ""} />
         <input type="hidden" name="homeLng" value={home?.lng ?? ""} />
         {home && (
-          <button type="button" onClick={() => setHome(null)} className="text-sm text-zinc-500 underline">
+          <button type="button" onClick={() => setHome(null)} className="text-sm text-muted hover:text-ink">
             Clear home location
           </button>
         )}
         {errors.home && <p className="text-sm text-red-700">{errors.home}</p>}
-      </div>
+      </fieldset>
 
-      <button type="submit" disabled={pending || uploading} className={`${buttonClass} w-full sm:w-auto`}>
-        {pending ? "Saving…" : "Save profile"}
-      </button>
+      <div className="flex justify-end border-t border-line pt-6">
+        <button type="submit" disabled={pending || uploading} className={`${buttonClass} w-full px-6 sm:w-auto`}>
+          {pending ? "Saving…" : "Save profile"}
+        </button>
+      </div>
     </form>
   );
 }

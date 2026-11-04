@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isProtectedPath } from "@/lib/utils";
+import { HOME_AFTER_LOGIN, isProtectedPath } from "@/lib/utils";
 
 /** Refreshes the Supabase session cookie and guards protected pages. Called from src/proxy.ts. */
 export async function updateSession(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function updateSession(request: NextRequest) {
     return redirectKeepingCookies(request, response, `/login?next=${encodeURIComponent(pathname + search)}`);
   }
   if (loggedIn && (pathname === "/login" || pathname === "/signup")) {
-    return redirectKeepingCookies(request, response, "/profile");
+    return redirectKeepingCookies(request, response, HOME_AFTER_LOGIN);
   }
   return response;
 }

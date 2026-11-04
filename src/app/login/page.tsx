@@ -1,3 +1,4 @@
+import { LogIn } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import LoginForm from "@/components/LoginForm";
@@ -13,7 +14,7 @@ const MESSAGES: Record<string, { kind: "error" | "success"; text: string }> = {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <Card title="Log in">
+    <Card title="Log in" subtitle="Welcome back! Let's keep your neighborhood clean." icon={<LogIn className="size-5" aria-hidden />}>
       {/* searchParams are only known at request time. */}
       <Suspense>
         <LoginContent searchParams={searchParams} />
@@ -28,9 +29,9 @@ async function LoginContent({ searchParams }: Pick<PageProps<"/login">, "searchP
   const notice = MESSAGES[get("message") ?? get("error") ?? ""];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {notice && <Alert kind={notice.kind}>{notice.text}</Alert>}
-      <LoginForm next={safeNextPath(get("next"), "/")} />
+      <LoginForm next={safeNextPath(get("next"))} />
     </div>
   );
 }

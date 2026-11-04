@@ -22,6 +22,7 @@ export async function signUp(_prev: SignupState, formData: FormData): Promise<Si
     confirmPassword: String(formData.get("confirmPassword") ?? ""),
   };
   const values = { username: input.username, email: input.email };
+  const next = safeNextPath(String(formData.get("next") ?? ""));
 
   const errors = validateSignup(input);
   if (Object.keys(errors).length > 0) return { errors, values };
@@ -33,7 +34,7 @@ export async function signUp(_prev: SignupState, formData: FormData): Promise<Si
     email: input.email,
     password: input.password,
     options: {
-      emailRedirectTo: `${origin}/auth/confirm?next=/profile`,
+      emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(next)}`,
       data: { username: input.username },
     },
   });
@@ -55,7 +56,7 @@ export type LoginState = { message?: string; email?: string };
 export async function logIn(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = safeNextPath(String(formData.get("next") ?? ""), "/");
+  const next = safeNextPath(String(formData.get("next") ?? ""));
 
   if (!email || !password) return { message: "Enter your email and password.", email };
 

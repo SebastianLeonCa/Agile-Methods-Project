@@ -1,5 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// Load E2E_TEST_EMAIL / E2E_TEST_PASSWORD etc. from .env.local when it exists (not in CI).
+try {
+  process.loadEnvFile(".env.local");
+} catch {}
+
 const PORT = 3000;
 
 export default defineConfig({

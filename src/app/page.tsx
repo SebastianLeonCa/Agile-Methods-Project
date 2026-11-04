@@ -1,13 +1,29 @@
+import { Suspense } from "react";
+import Header from "@/components/Header";
+import SpotExplorer, { MapLoading } from "@/components/SpotExplorer";
+import { createClient } from "@/lib/supabase/server";
+import type { Spot } from "@/lib/types";
+
 export default function Home() {
   return (
-    <div className="flex flex-1 flex-col">
-      <header className="bg-emerald-700 px-4 py-6 text-white sm:px-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">CleanUp Map</h1>
-        <p className="mt-1 text-emerald-100 sm:text-lg">See it. Map it. Clean it. Together.</p>
-      </header>
-      <main className="flex flex-1 items-center justify-center p-4 text-center text-zinc-600 dark:text-zinc-400">
-        <p>The litter map is coming soon.</p>
+    <div className="flex h-dvh flex-col">
+      <Header />
+      <main className="relative min-h-0 flex-1">
+        {/* Spots are fetched fresh on every request; the header is static. */}
+        <Suspense fallback={<MapLoading />}>
+          <Spots />
+        </Suspense>
       </main>
     </div>
   );
+}
+
+async function Spots() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("spots").select("*").order("created_at", { ascending: false });
+
+  if (error) {
+    return <p className="p-4 text-center text-red-700">Could not load litter spots. Please try again later.</p>;
+  }
+  return <SpotExplorer spots={data as Spot[]} />;
 }

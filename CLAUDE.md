@@ -54,6 +54,10 @@ Folders are created in the sprint that first needs them.
 - Secrets only in `.env.local` (git-ignored) and Vercel env vars. Keep `.env.example` with names only.
   `SUPABASE_SERVICE_ROLE_KEY` is server-only, never import it in client code.
 - Every table has RLS enabled with explicit policies. Migrations are written here, then the user runs them.
+- Cache Components is on (`next.config.ts`): server components that read Supabase/cookies must sit inside
+  `<Suspense>` (see `src/app/page.tsx`). Use `@/lib/supabase/server` on the server, `@/lib/supabase/client` in the browser.
+- Map: `LitterMap` is loaded via `next/dynamic` with `ssr: false` from a client component (`SpotExplorer`).
+  Pins are `L.divIcon` emojis (`spotIcon()` in `src/lib/utils.ts`); don't set `transform` on `.spot-pin` (Leaflet uses it).
 - Mobile first: everything must work at 375px wide and on desktop.
 - Simple, readable code; few files, few libraries.
 - Definition of Done: works on the Vercel URL; lint, typecheck, test, build pass; has a test; CI green.

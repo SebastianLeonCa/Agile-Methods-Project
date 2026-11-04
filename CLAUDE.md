@@ -8,8 +8,10 @@ Slogan: *See it. Map it. Clean it. Together.* Full product spec and sprint plan:
 ## Stack (all free tiers)
 
 - **Next.js 16 (App Router) + TypeScript + React 19**, `src/` dir, import alias `@/*` → `src/*`
-- **Tailwind CSS v4** (configured in `src/app/globals.css`, no `tailwind.config`)
-- **Leaflet + react-leaflet** with OpenStreetMap tiles (load map with `next/dynamic`, `ssr: false`)
+- **Tailwind CSS v4** (configured in `src/app/globals.css`, no `tailwind.config`), **lucide-react** icons,
+  **Inter** + **Plus Jakarta Sans** (headings) via `next/font`
+- **Leaflet + react-leaflet** with OpenStreetMap tiles softened by the `.map-tiles` CSS filter
+  (CARTO now needs an API key, so it is not used)
 - **Supabase** (Postgres, Auth, Storage, Realtime) via `@supabase/supabase-js` + `@supabase/ssr`
 - **Vercel** Hobby hosting (auto-deploys `main`), **GitHub Actions** CI
 - **Vitest + React Testing Library** (unit), **Playwright** Chromium only (e2e)
@@ -37,8 +39,9 @@ npm run dev                  # http://localhost:3000
 .github/workflows/ci.yml   CI: lint → typecheck → test → build → e2e
 supabase/migrations/       numbered SQL files (0001_spots.sql, ...), applied by hand in Supabase SQL Editor
 supabase/seed.sql          sample data
-src/app/                   routes (App Router); page.tsx = home (the map)
-src/components/            UI components
+src/app/                   routes (App Router): page.tsx = landing, map/ = the map, auth/, login/, signup/, profile/
+src/components/            UI components; ui.tsx = shared buttons, fields, cards, badges
+src/lib/map.ts             tile settings, pin HTML (`pinHtml`), Web Mercator `project()`
 src/proxy.ts               Next 16's renamed middleware: refreshes the Supabase session, guards protected pages
 src/lib/supabase/          client.ts (browser), server.ts (server), middleware.ts (session refresh, used by proxy.ts)
 src/lib/auth.ts            getCurrentProfile() for server components
@@ -47,6 +50,7 @@ src/lib/image.ts           browser-side image compression before upload
 src/lib/types.ts           TS types matching the DB
 tests/unit/                Vitest tests (*.test.ts[x])
 tests/e2e/                 Playwright tests (*.spec.ts), run at desktop + 375px mobile viewport
+docs/screenshots/          screenshots per sprint (desktop + 375px)
 ```
 
 Folders are created in the sprint that first needs them.
@@ -59,9 +63,18 @@ Folders are created in the sprint that first needs them.
   `SUPABASE_SERVICE_ROLE_KEY` is server-only, never import it in client code.
 - Every table has RLS enabled with explicit policies. Migrations are written here, then the user runs them.
 - Cache Components is on (`next.config.ts`): server components that read Supabase/cookies must sit inside
-  `<Suspense>` (see `src/app/page.tsx`). Use `@/lib/supabase/server` on the server, `@/lib/supabase/client` in the browser.
+  `<Suspense>` (see `src/app/map/page.tsx`). Use `@/lib/supabase/server` on the server, `@/lib/supabase/client` in the browser.
+- Next keeps up to 3 visited pages alive (hidden, via React `<Activity>`) and restores their state:
+  - Leaflet maps must render only while shown: wrap with `useShownOnly()` (otherwise "Map container is being reused").
+  - Reset transient UI (dialogs, dropdowns, toasts) in a `useLayoutEffect` cleanup (see `SpotExplorer`, `AvatarMenu`).
 - Map: `LitterMap` is loaded via `next/dynamic` with `ssr: false` from a client component (`SpotExplorer`).
-  Pins are `L.divIcon` emojis (`spotIcon()` in `src/lib/utils.ts`); don't set `transform` on `.spot-pin` (Leaflet uses it).
+  Pins are `L.divIcon` with `pinHtml(pinVariant(spot))`; style only the inner `.pin`, never `transform` on
+  `.spot-pin` (Leaflet positions it with transform).
+- Design system: colors are tokens in `globals.css` `@theme` (`brand`, `ink`, `muted`, `line`, `surface`, `low`,
+  `medium`, `high`, `clean`). Use them (`bg-brand`, `text-ink`…) instead of raw hex. `rounded-2xl` cards, soft shadows,
+  lucide icons (no emoji in UI), transitions 150–250ms (disabled by `prefers-reduced-motion`). Light theme only.
+- Actions that need an account: for visitors, open `AuthPromptModal` ("Log in to …") with `next` set to the current page.
+  After login / email confirmation the default destination is `/map` (`HOME_AFTER_LOGIN`).
 - Auth: Supabase email + password. Forms use Server Actions + `useActionState` (`src/app/auth/actions.ts`).
   Email confirmation lands on `/auth/confirm` (handles the default `?code=` link and `?token_hash=`).
   Protected paths are listed in `isProtectedPath()` (`src/lib/utils.ts`); pages also re-check the user.

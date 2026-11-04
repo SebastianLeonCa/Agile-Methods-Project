@@ -1,17 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { fitWithin } from "@/lib/image";
-import { isProtectedPath, safeNextPath, spotIcon } from "@/lib/utils";
+import { pinHtml, project } from "@/lib/map";
+import { isProtectedPath, pinVariant, safeNextPath } from "@/lib/utils";
 
-describe("spotIcon", () => {
-  it("shows the urgency color for spots that are not clean", () => {
-    expect(spotIcon({ urgency: "low", status: "dirty" })).toBe("🟢");
-    expect(spotIcon({ urgency: "medium", status: "dirty" })).toBe("🟡");
-    expect(spotIcon({ urgency: "high", status: "planned" })).toBe("🔴");
+describe("pinVariant", () => {
+  it("uses the urgency color for spots that are not clean", () => {
+    expect(pinVariant({ urgency: "low", status: "dirty" })).toBe("low");
+    expect(pinVariant({ urgency: "medium", status: "dirty" })).toBe("medium");
+    expect(pinVariant({ urgency: "high", status: "planned" })).toBe("high");
   });
 
-  it("shows a check mark for clean spots, whatever the urgency", () => {
-    expect(spotIcon({ urgency: "high", status: "clean" })).toBe("✅");
-    expect(spotIcon({ urgency: "low", status: "clean" })).toBe("✅");
+  it("marks clean spots as clean, whatever the urgency", () => {
+    expect(pinVariant({ urgency: "high", status: "clean" })).toBe("clean");
+    expect(pinVariant({ urgency: "low", status: "clean" })).toBe("clean");
+  });
+});
+
+describe("pinHtml", () => {
+  it("renders a colored pin, with a check icon only for clean spots", () => {
+    expect(pinHtml("high")).toBe('<div class="pin pin-high"></div>');
+    expect(pinHtml("clean")).toContain('class="pin pin-clean"><svg');
+  });
+});
+
+describe("project", () => {
+  it("maps lat/lng to Web Mercator pixels", () => {
+    expect(project(0, 0, 0)).toEqual({ x: 128, y: 128 });
+    expect(project(0, 180, 1)).toEqual({ x: 512, y: 256 });
   });
 });
 
@@ -22,8 +37,8 @@ describe("isProtectedPath", () => {
     }
   });
 
-  it("leaves public pages open", () => {
-    for (const path of ["/", "/login", "/signup", "/events", "/profiles"]) {
+  it("leaves public pages open, including the map", () => {
+    for (const path of ["/", "/map", "/login", "/signup", "/events", "/profiles"]) {
       expect(isProtectedPath(path)).toBe(false);
     }
   });
@@ -35,11 +50,11 @@ describe("safeNextPath", () => {
     expect(safeNextPath("/events?id=1")).toBe("/events?id=1");
   });
 
-  it("falls back for missing or external URLs", () => {
-    expect(safeNextPath(null)).toBe("/");
-    expect(safeNextPath("https://evil.com", "/profile")).toBe("/profile");
-    expect(safeNextPath("//evil.com")).toBe("/");
-    expect(safeNextPath("/\\evil.com")).toBe("/");
+  it("falls back to the map for missing or external URLs", () => {
+    expect(safeNextPath(null)).toBe("/map");
+    expect(safeNextPath("https://evil.com")).toBe("/map");
+    expect(safeNextPath("//evil.com")).toBe("/map");
+    expect(safeNextPath("/\\evil.com", "/profile")).toBe("/profile");
   });
 });
 

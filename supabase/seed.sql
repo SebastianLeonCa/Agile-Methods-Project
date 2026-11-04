@@ -12,14 +12,14 @@ insert into spots (id, title, description, type, urgency, status, lat, lng, addr
   ('00000000-0000-4000-8000-000000000002',
    'Picnic trash on Flagstaff Hill',
    'Cups, food containers and napkins left on the grass after a weekend movie night.',
-   'park', 'medium', 'dirty', 40.4400, -79.9478,
+   'park', 'medium', 'dirty', 40.4395, -79.9450,
    'Flagstaff Hill, Schenley Drive, Pittsburgh, PA 15213',
    'https://picsum.photos/seed/cleanup-2/800/600', null, now() - interval '5 days'),
 
   ('00000000-0000-4000-8000-000000000003',
    'Dumped tires in Junction Hollow',
    'Old tires and construction debris dumped next to the trail. Needs several people to carry out.',
-   'other', 'high', 'planned', 40.4390, -79.9560,
+   'other', 'high', 'planned', 40.4400, -79.9503,
    'Junction Hollow Trail, Boundary Street, Pittsburgh, PA 15213',
    'https://picsum.photos/seed/cleanup-3/800/600', null, now() - interval '9 days'),
 

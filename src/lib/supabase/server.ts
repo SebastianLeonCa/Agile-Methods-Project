@@ -1,8 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 /** Supabase client for Server Components, Route Handlers and Server Actions. */
 export async function createClient() {
+  // Supabase compares token expiry with the current time, which Next won't allow while prerendering.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -18,7 +21,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
             // Called from a Server Component, where cookies are read-only.
-            // The session is refreshed by the middleware instead (Sprint 2).
+            // The session is refreshed in src/proxy.ts instead.
           }
         },
       },

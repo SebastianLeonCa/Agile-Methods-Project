@@ -4,20 +4,20 @@ import SpotDetails from "@/components/SpotDetails";
 import { makeSpot } from "./fixtures";
 
 describe("SpotDetails", () => {
-  it("shows the spot's photo, title, description, labels, address and date", () => {
+  it("shows the spot's photo, title, description, badges, address and date", () => {
     render(<SpotDetails spot={makeSpot()} onClose={() => {}} />);
 
     expect(screen.getByRole("heading", { name: "Plastic around Panther Hollow Lake" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Spot photo" })).toHaveAttribute(
+    expect(screen.getByRole("img", { name: "Photo of Plastic around Panther Hollow Lake" })).toHaveAttribute(
       "src",
       "https://picsum.photos/seed/cleanup-1/800/600",
     );
     expect(screen.getByText("Bottles and plastic bags along the edge of the lake.")).toBeInTheDocument();
     expect(screen.getByText("Park")).toBeInTheDocument();
-    expect(screen.getByText(/High urgency/)).toBeInTheDocument();
+    expect(screen.getByText("High urgency")).toBeInTheDocument();
     expect(screen.getByText("Needs cleanup")).toBeInTheDocument();
     expect(screen.getByText(/Panther Hollow Lake, Schenley Park, Pittsburgh/)).toBeInTheDocument();
-    expect(screen.getByText(/Nov 1, 2026/)).toBeInTheDocument();
+    expect(screen.getByText("Reported Nov 1, 2026")).toBeInTheDocument();
   });
 
   it("shows before and after photos for a cleaned spot", () => {
@@ -27,8 +27,8 @@ describe("SpotDetails", () => {
         onClose={() => {}}
       />,
     );
-    expect(screen.getByRole("img", { name: "Before photo" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "After photo" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /^Before photo of/ })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /^After photo of/ })).toBeInTheDocument();
     expect(screen.getByText("Clean")).toBeInTheDocument();
   });
 

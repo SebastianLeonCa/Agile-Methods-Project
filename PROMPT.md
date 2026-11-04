@@ -74,8 +74,10 @@ sees the before & after.
 | Need | Choice | Free tier notes |
 |---|---|---|
 | Framework | **Next.js (latest stable, App Router) + TypeScript** | — |
-| Styling | **Tailwind CSS** | — |
-| Map | **Leaflet + react-leaflet** with **OpenStreetMap** tiles | No API key needed. Show the required "© OpenStreetMap contributors" attribution. |
+| Styling | **Tailwind CSS v4** with design tokens in `globals.css` (see "Design system" below) | — |
+| Icons | **lucide-react** | — |
+| Fonts | **Inter** (body) + **Plus Jakarta Sans** (headings) via `next/font` | — |
+| Map | **Leaflet + react-leaflet** with **OpenStreetMap** tiles, softened with a CSS filter (`.map-tiles`) | No API key needed. Show the required "© OpenStreetMap contributors" attribution. (CARTO Positron was tried in Sprint 2 but now returns "API KEY REQUIRED" tiles without a CARTO account.) |
 | Address lookup | **Nominatim** (OpenStreetMap) reverse geocoding | Max 1 request/second, must send a descriptive User-Agent / Referer. Call it only when the user drops a pin, never in a loop. |
 | Database | **Supabase Postgres** | Free project: 500 MB DB. Pauses after ~1 week with no activity (I can un-pause it from the dashboard). |
 | Auth | **Supabase Auth** (email + password, with email verification) | Free. |
@@ -89,11 +91,18 @@ sees the before & after.
 
 **Supabase client:** use the official `@supabase/supabase-js` and `@supabase/ssr` packages
 (server client for Server Components / Route Handlers / Server Actions, browser client for Client Components,
-and middleware to refresh the session).
+and `src/proxy.ts`, Next 16's renamed middleware, to refresh the session).
 
 **Leaflet + Next.js gotcha:** Leaflet needs `window`, so load the map component with
-`next/dynamic(..., { ssr: false })`. Use `L.divIcon` with emoji/colored HTML for markers
+`next/dynamic(..., { ssr: false })`. Use `L.divIcon` with colored HTML for markers
 (this avoids the broken default marker image problem and gives us the "urgency level icons").
+Next 16 keeps visited pages alive (hidden) and shows them again; a Leaflet map must only render while its page is
+shown (`useShownOnly()` in `src/components/useShownOnly.ts`), otherwise returning to the page crashes it.
+
+**Design system (added in Sprint 2):** clean, modern, friendly "eco" look. Lots of white space, `rounded-2xl`,
+soft shadows. Colors are Tailwind theme tokens: `brand` #16a34a, `ink` #0f172a, `surface` #f8fafc; urgency
+`low` #22c55e, `medium` #f59e0b, `high` #ef4444, `clean` #3b82f6. Shared buttons/fields/cards live in
+`src/components/ui.tsx`. Transitions 150–250ms, disabled under `prefers-reduced-motion`. Light theme only.
 
 ---
 
@@ -127,15 +136,18 @@ Agile-Methods-Project/
 │  └─ seed.sql             # sample data
 ├─ src/
 │  ├─ app/                 # Next.js routes (App Router)
-│  │  ├─ page.tsx          # Home = the map
+│  │  ├─ page.tsx          # Public landing page
+│  │  ├─ map/              # The interactive litter map (public)
+│  │  ├─ auth/             # Server actions + /auth/confirm (email link)
 │  │  ├─ login/  signup/  profile/  events/  groups/  dashboard/
 │  │  └─ api/cron/reminders/route.ts
 │  ├─ components/          # UI components (Map, SpotDetails, EventCard, ...)
 │  ├─ lib/
-│  │  ├─ supabase/         # client.ts, server.ts, middleware.ts
+│  │  ├─ supabase/         # client.ts, server.ts, middleware.ts (session refresh)
+│  │  ├─ map.ts            # tile settings, pin HTML, map math
 │  │  ├─ types.ts          # TypeScript types matching the DB
 │  │  └─ utils.ts
-│  └─ middleware.ts
+│  └─ proxy.ts             # Next 16's renamed middleware
 └─ tests/
    ├─ unit/
    └─ e2e/
@@ -281,8 +293,7 @@ create table content_reports (           -- moderation: report fake/offensive co
 **Storage:** bucket `spot-photos` (public read). Upload path `<user_id>/<uuid>.jpg`.
 Policy: authenticated users can upload only inside their own `<user_id>/` folder.
 
-**Seed data (`supabase/seed.sql`):** 8–10 sample spots around one city (ask me which city; default to
-Lima, Peru) with a mix of types, urgency levels and statuses, a short description, an address, and a
+**Seed data (`supabase/seed.sql`):** 8–10 sample spots around Carnegie Mellon University, Pittsburgh, PA with a mix of types, urgency levels and statuses, a short description, an address, and a
 placeholder photo URL (e.g. `https://picsum.photos/seed/<n>/800/600`).
 
 ---
@@ -325,7 +336,7 @@ Each sprint ends with something working on the live URL.
    - Sign in to vercel.com with GitHub → "Add New Project" → import `Agile-Methods-Project` → add the env vars → Deploy.
 8. Verify the deployed URL loads. **Done when:** live URL shows the header and CI is green.
 
-### Sprint 1 — Litter Map (read-only) ← CURRENT SPRINT
+### Sprint 1 — Litter Map (read-only) ✅ done
 Sprint Backlog items (user-facing):
 - **Users can see a map of the city** (OpenStreetMap, zoom/pan, attribution, full-width on mobile).
 - **Users can see litter spots as pins** loaded from the `spots` table (seeded sample data).
@@ -353,6 +364,23 @@ Steps:
 - Migration: `profiles` table + trigger that creates a profile on signup + RLS. Storage bucket `spot-photos` + policies.
 - Middleware protects `/profile`, `/dashboard`, and any create/edit pages.
 - Tests: e2e sign-up form validation, login redirect for protected pages.
+
+**Sprint 2 additions (added by the Product Owner during the sprint) ✅ done:**
+- **Landing page at `/`** (public): hero with name, slogan, description, "Explore the map" + "Sign up" and a map
+  preview; "How it works" (3 steps); feature cards (Litter Map, Cleanup Events, Before & After, Community, Safety);
+  live impact numbers from Supabase (spots reported, spots cleaned); vision statement; "Join your community" call
+  to action; footer with map credits.
+- **The map moves to `/map`** and stays public. Floating top bar (search/filter placeholders + "Report a spot"),
+  floating legend, restyled zoom controls, colored round pins (check icon for clean spots), details card that slides
+  in from the right (desktop) or a bottom sheet with a drag handle (mobile); the map pans so the selected pin is not
+  hidden behind the panel.
+- **Actions need login.** Visitors who try one (e.g. "Report a spot") get a friendly "Log in to report a spot"
+  dialog with Log in / Sign up, and come back to where they were (`?next=`).
+- **After log in or email confirmation, users land on `/map`.**
+- **Header:** logo + "Map" for everyone; Log in / Sign up for visitors; avatar menu (Profile, Log out) for users.
+- **Visual redesign of the whole site** with the design system described in section 2.
+- **Bug fix:** "This page couldn't load" after logging in or returning to the map (Leaflet map reused after Next
+  kept the page alive); covered by an e2e regression test.
 
 ### Sprint 3 — Report a spot
 - **Users can drop a pin on the map** ("Report a spot" button → click map → draggable marker).

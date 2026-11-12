@@ -1,8 +1,8 @@
 "use client";
 
-import { Calendar, MapPin, X } from "lucide-react";
+import { Calendar, CircleCheck, Flag, MapPin, X } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui";
+import { Badge, secondaryButtonClass } from "@/components/ui";
 import type { Spot, SpotStatus, Urgency } from "@/lib/types";
 import { cn, formatDate, STATUS_LABEL, TYPE_LABEL, URGENCY_LABEL } from "@/lib/utils";
 
@@ -20,13 +20,23 @@ const STATUS_BADGE: Record<SpotStatus, string> = {
 
 const CLOSE_DRAG = 80; // px dragged down on the handle to close the mobile sheet
 
+export type Confirmations = {
+  count: number;
+  /** The current user already confirmed this spot. */
+  mine: boolean;
+  pending: boolean;
+  onConfirm: () => void;
+};
+
 type Props = {
   spot: Spot;
   onClose: () => void;
+  /** "Still dirty?" section; not shown for clean spots. */
+  confirmations?: Confirmations;
 };
 
 /** Floating card on desktop (slides in from the right), bottom sheet with a drag handle on mobile. */
-export default function SpotDetails({ spot, onClose }: Props) {
+export default function SpotDetails({ spot, onClose, confirmations }: Props) {
   const [drag, setDrag] = useState<{ startY: number; dy: number } | null>(null);
 
   const handlers = {
@@ -105,8 +115,30 @@ export default function SpotDetails({ spot, onClose }: Props) {
             <dd>Reported {formatDate(spot.created_at)}</dd>
           </div>
         </dl>
+
+        {confirmations && spot.status !== "clean" && <StillDirty {...confirmations} />}
       </div>
     </aside>
+  );
+}
+
+function StillDirty({ count, mine, pending, onConfirm }: Confirmations) {
+  const people = count === 1 ? "1 person has" : `${count} people have`;
+  return (
+    <section aria-label="Still dirty?" className="mt-4 rounded-xl bg-surface p-3.5">
+      <p className="text-sm font-medium text-ink">
+        {count === 0 ? "Seen it recently? Let others know it still needs a cleanup." : `${people} confirmed it is still dirty.`}
+      </p>
+      <button
+        type="button"
+        onClick={onConfirm}
+        disabled={mine || pending}
+        className={cn(secondaryButtonClass, "mt-3 w-full", mine && "disabled:opacity-100")}
+      >
+        {mine ? <CircleCheck className="size-4 text-brand" aria-hidden /> : <Flag className="size-4" aria-hidden />}
+        {mine ? "You confirmed it" : pending ? "Confirming…" : "Confirm still dirty"}
+      </button>
+    </section>
   );
 }
 

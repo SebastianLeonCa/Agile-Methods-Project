@@ -94,7 +94,7 @@ export default function SpotExplorer({ spots, userId }: { spots: MapSpot[]; user
   }
 
   return (
-    <div className={cn("relative h-full w-full overflow-hidden", report && "reporting")}>
+    <div className={cn("relative h-full w-full overflow-clip", report && "reporting")}>
       {shown ? (
         <LitterMap
           spots={visible}

@@ -90,7 +90,7 @@ export default function ReportSpotForm({ userId, pin, onCancel, onReported }: Pr
     <aside
       aria-label="Report a spot"
       className={cn(
-        "absolute inset-x-0 bottom-0 z-[1000] flex max-h-[60%] flex-col overflow-hidden rounded-t-3xl border border-line bg-white shadow-2xl",
+        "absolute inset-x-0 bottom-0 z-[1000] flex max-h-[60%] flex-col overflow-clip rounded-t-3xl border border-line bg-white shadow-2xl",
         "animate-sheet-up sm:animate-slide-in sm:top-20 sm:right-4 sm:bottom-auto sm:left-auto sm:max-h-[calc(100%-6rem)] sm:w-[380px] sm:rounded-2xl",
       )}
     >

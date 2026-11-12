@@ -1,8 +1,12 @@
 // TypeScript types matching the database (supabase/migrations).
 
-export type SpotType = "park" | "beach" | "street" | "river" | "other";
-export type Urgency = "low" | "medium" | "high";
-export type SpotStatus = "dirty" | "planned" | "clean";
+export const SPOT_TYPES = ["park", "beach", "street", "river", "other"] as const;
+export const URGENCIES = ["low", "medium", "high"] as const;
+export const SPOT_STATUSES = ["dirty", "planned", "clean"] as const;
+
+export type SpotType = (typeof SPOT_TYPES)[number];
+export type Urgency = (typeof URGENCIES)[number];
+export type SpotStatus = (typeof SPOT_STATUSES)[number];
 
 export type Spot = {
   id: string;
@@ -31,3 +35,6 @@ export type Profile = {
   home_lng: number | null;
   created_at: string;
 };
+
+/** A spot as loaded for the map: with the ids of users who confirmed it is still dirty. */
+export type MapSpot = Spot & { spot_confirmations: { user_id: string }[] };

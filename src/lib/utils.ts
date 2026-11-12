@@ -27,6 +27,18 @@ export const STATUS_LABEL: Record<SpotStatus, string> = {
   clean: "Clean",
 };
 
+/** Map filters: an empty list means "show all" for that group. */
+export type SpotFilters = { types: SpotType[]; urgencies: Urgency[]; statuses: SpotStatus[] };
+
+export const NO_FILTERS: SpotFilters = { types: [], urgencies: [], statuses: [] };
+
+export function filterSpots<T extends Pick<Spot, "type" | "urgency" | "status">>(spots: T[], filters: SpotFilters): T[] {
+  const allows = <V>(chosen: V[], value: V) => chosen.length === 0 || chosen.includes(value);
+  return spots.filter(
+    (s) => allows(filters.types, s.type) && allows(filters.urgencies, s.urgency) && allows(filters.statuses, s.status),
+  );
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
 }

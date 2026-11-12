@@ -36,6 +36,7 @@ export default function ReportSpotForm({ userId, pin, onCancel, onReported }: Pr
   const values = state.values;
 
   const [address, setAddress] = useState("");
+  const [addressEdited, setAddressEdited] = useState(false);
   const [locating, setLocating] = useState(false);
   const [photoUrl, setPhotoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -45,8 +46,9 @@ export default function ReportSpotForm({ userId, pin, onCancel, onReported }: Pr
     if (state.spotId) onReported(state.spotId);
   }, [state.spotId, onReported]);
 
-  // Fill in the street address when the pin is placed or moved. The user can still edit it.
+  // Fill in the street address when the pin is placed or moved, until the user types their own.
   useEffect(() => {
+    if (addressEdited) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       setLocating(true);
@@ -62,7 +64,7 @@ export default function ReportSpotForm({ userId, pin, onCancel, onReported }: Pr
       clearTimeout(timer);
       controller.abort();
     };
-  }, [pin.lat, pin.lng]);
+  }, [pin.lat, pin.lng, addressEdited]);
 
   async function onPhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -123,7 +125,10 @@ export default function ReportSpotForm({ userId, pin, onCancel, onReported }: Pr
             id="address"
             name="address"
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              setAddressEdited(true);
+            }}
             maxLength={200}
             aria-invalid={!!errors.address}
             className={inputClass}

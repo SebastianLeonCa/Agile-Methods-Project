@@ -53,12 +53,13 @@ export default function SpotExplorer({ spots, userId }: { spots: MapSpot[]; user
     [],
   );
 
+  // Escape closes the details panel or the "tap the map" step, but never throws away a half-filled report.
   useEffect(() => {
     if (!selected && !report) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || authPrompt) return;
       setSelectedId(null);
-      setReport(null);
+      if (report && !report.pin) setReport(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

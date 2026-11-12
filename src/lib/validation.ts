@@ -69,6 +69,7 @@ export function validateSpot(
   if (input.description.length > 1000) errors.description = "Description must be 1000 characters or less.";
   if (input.address.length > 200) errors.address = "Address must be 200 characters or less.";
   // Only photos uploaded to the reporter's own folder in our bucket.
-  if (input.photoUrl && !input.photoUrl.startsWith(photoFolder)) errors.photo = "Invalid photo. Please upload it again.";
+  const ownPhoto = input.photoUrl.startsWith(photoFolder) && !input.photoUrl.includes("..");
+  if (input.photoUrl && !ownPhoto) errors.photo = "Invalid photo. Please upload it again.";
   return errors;
 }

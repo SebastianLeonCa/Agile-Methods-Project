@@ -29,12 +29,17 @@ export default function SpotFilterMenu({ filters, onChange, shown, total }: Prop
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    // Capture phase + stopPropagation: Escape closes only this menu, not the spot panel or report form under it.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      setOpen(false);
+    };
     const onDown = (e: PointerEvent) => !root.current?.contains(e.target as Node) && setOpen(false);
-    window.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
     window.addEventListener("pointerdown", onDown);
     return () => {
-      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onKey, true);
       window.removeEventListener("pointerdown", onDown);
     };
   }, [open]);

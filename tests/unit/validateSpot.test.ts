@@ -45,5 +45,6 @@ describe("validateSpot", () => {
     const otherUser = "https://x.supabase.co/storage/v1/object/public/spot-photos/user-2/abc.jpg";
     expect(validateSpot({ ...goodSpot, photoUrl: otherUser }, folder)).toHaveProperty("photo");
     expect(validateSpot({ ...goodSpot, photoUrl: "https://evil.example/x.jpg" }, folder)).toHaveProperty("photo");
+    expect(validateSpot({ ...goodSpot, photoUrl: `${folder}../user-2/abc.jpg` }, folder)).toHaveProperty("photo");
   });
 });

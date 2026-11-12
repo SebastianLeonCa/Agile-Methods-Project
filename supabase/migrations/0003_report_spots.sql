@@ -2,16 +2,11 @@
 -- Run once in Supabase → SQL Editor.
 
 -- Spots: logged-in users add spots as themselves; new spots always start "dirty".
+-- No update policy yet: status changes come with events (Sprint 4) and after photos (Sprint 5).
 create policy "Users can report spots"
   on spots for insert
   to authenticated
   with check (created_by = auth.uid() and status = 'dirty');
-
-create policy "Reporters can update their spots"
-  on spots for update
-  to authenticated
-  using (created_by = auth.uid())
-  with check (created_by = auth.uid());
 
 create policy "Reporters can delete their spots"
   on spots for delete

@@ -56,3 +56,46 @@ test("going back and forth between pages keeps the map working", async ({ page }
   await expect(page.getByText("couldn’t load")).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test("visitors can filter the map by status, urgency and type", async ({ page }) => {
+  await page.goto("/map");
+  const pins = page.locator(".spot-pin");
+  await expect(pins.first()).toBeVisible();
+  const total = await pins.count();
+
+  await page.getByRole("button", { name: "Filters" }).click();
+  const menu = page.getByRole("group", { name: "Filter spots" });
+  await menu.getByRole("button", { name: "Clean", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Filters (1 on)" })).toBeVisible();
+
+  // Only clean (blue check) pins are left, and the count matches.
+  await expect(pins.locator(".pin:not(.pin-clean)")).toHaveCount(0);
+  const clean = await pins.count();
+  expect(clean).toBeGreaterThan(0);
+  expect(clean).toBeLessThan(total);
+  await expect(menu.getByRole("status")).toHaveText(`Showing ${clean} of ${total} spots`);
+
+  // Urgency + type narrow it further; "Clear all" brings every pin back.
+  await menu.getByRole("button", { name: "Clean", exact: true }).click();
+  await menu.getByRole("button", { name: "High" }).click();
+  await expect(pins.locator(".pin:not(.pin-high)")).toHaveCount(0);
+  await menu.getByRole("button", { name: "Beach" }).click();
+  await expect(menu.getByRole("status")).toHaveText(new RegExp(`^Showing \\d+ of ${total} spots$`));
+
+  await menu.getByRole("button", { name: "Clear all" }).click();
+  await expect(pins).toHaveCount(total);
+  await page.keyboard.press("Escape");
+  await expect(menu).toBeHidden();
+});
+
+test("visitors get a login prompt when they confirm a spot is still dirty", async ({ page }) => {
+  await page.goto("/map");
+  await page.getByRole("button", { name: "Filters" }).click();
+  await page.getByRole("group", { name: "Filter spots" }).getByRole("button", { name: "Needs cleanup" }).click();
+  await page.keyboard.press("Escape");
+
+  await page.locator(".spot-pin").first().click();
+  const details = page.getByRole("complementary", { name: "Spot details" });
+  await details.getByRole("button", { name: "Confirm still dirty" }).click();
+  await expect(page.getByRole("dialog", { name: "Log in to confirm a spot" })).toBeVisible();
+});

@@ -382,7 +382,7 @@ Steps:
 - **Bug fix:** "This page couldn't load" after logging in or returning to the map (Leaflet map reused after Next
   kept the page alive); covered by an e2e regression test.
 
-### Sprint 3 — Report a spot
+### Sprint 3 — Report a spot ✅ done
 - **Users can drop a pin on the map** ("Report a spot" button → click map → draggable marker).
 - **The street address fills in automatically** (Nominatim reverse geocoding, debounced, editable).
 - **Users can upload a "before" photo** (compressed in browser), choose **type** and **urgency**, add a title + description.

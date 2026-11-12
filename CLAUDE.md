@@ -42,6 +42,8 @@ supabase/seed.sql          sample data
 src/app/                   routes (App Router): page.tsx = landing, map/ = the map, auth/, login/, signup/, profile/
 src/components/            UI components; ui.tsx = shared buttons, fields, cards, badges
 src/lib/map.ts             tile settings, pin HTML (`pinHtml`), Web Mercator `project()`
+src/lib/geocode.ts         Nominatim reverse geocoding (`reverseGeocode`) + `formatAddress()`
+src/app/map/actions.ts     server actions: `reportSpot`, `confirmSpot`
 src/proxy.ts               Next 16's renamed middleware: refreshes the Supabase session, guards protected pages
 src/lib/supabase/          client.ts (browser), server.ts (server), middleware.ts (session refresh, used by proxy.ts)
 src/lib/auth.ts            getCurrentProfile() for server components
@@ -67,6 +69,8 @@ Folders are created in the sprint that first needs them.
 - Next keeps up to 3 visited pages alive (hidden, via React `<Activity>`) and restores their state:
   - Leaflet maps must render only while shown: wrap with `useShownOnly()` (otherwise "Map container is being reused").
   - Reset transient UI (dialogs, dropdowns, toasts) in a `useLayoutEffect` cleanup (see `SpotExplorer`, `AvatarMenu`).
+- Panels and bottom sheets use `overflow-clip`, not `overflow-hidden`: the browser scrolls hidden-overflow boxes
+  when it brings a focused field into view, which pushed the mobile report form's header off screen.
 - Map: `LitterMap` is loaded via `next/dynamic` with `ssr: false` from a client component (`SpotExplorer`).
   Pins are `L.divIcon` with `pinHtml(pinVariant(spot))`; style only the inner `.pin`, never `transform` on
   `.spot-pin` (Leaflet positions it with transform).
@@ -79,6 +83,10 @@ Folders are created in the sprint that first needs them.
   Email confirmation lands on `/auth/confirm` (handles the default `?code=` link and `?token_hash=`).
   Protected paths are listed in `isProtectedPath()` (`src/lib/utils.ts`); pages also re-check the user.
 - Storage: bucket `spot-photos`, path `<user_id>/<uuid>.jpg`; compress with `compressImage()` before upload.
+- Report flow: "Report a spot" → tap map → draggable pin + `ReportSpotForm`; address from Nominatim (debounced 700ms,
+  stops once the user edits it). Filters are pure (`filterSpots()` in `utils.ts`). Spots have no update policy yet
+  (status changes come with events / after photos).
+- Local Node must be ≥ 22.22 for the jsdom unit tests (CI uses the latest Node 22).
 - Free Supabase email sends only a few emails/hour: create test users in the dashboard with "Auto Confirm".
   The logged-in e2e test needs `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` (`.env.local` locally, GitHub secrets in CI).
 - Mobile first: everything must work at 375px wide and on desktop.

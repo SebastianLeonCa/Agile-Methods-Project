@@ -128,6 +128,8 @@ h3 {
 .pin-high { --pin: var(--color-high); }
 .pin-clean { --pin: var(--color-clean); }
 .pin-home { --pin: var(--color-ink); }
+.pin-new { box-shadow: 0 0 0 6px color-mix(in srgb, var(--pin) 25%, transparent), 0 4px 14px rgb(15 23 42 / 0.35); }
+.reporting .leaflet-container { cursor: crosshair; }
 .pin svg {
   width: 16px;
   height: 16px;

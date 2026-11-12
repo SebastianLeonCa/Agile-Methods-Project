@@ -38,4 +38,22 @@ describe("SpotDetails", () => {
     fireEvent.click(screen.getByRole("button", { name: "Close details" }));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it("lets users confirm a spot is still dirty and shows how many did", () => {
+    const onConfirm = vi.fn();
+    const props = { count: 2, mine: false, pending: false, onConfirm };
+    const { rerender } = render(<SpotDetails spot={makeSpot()} onClose={() => {}} confirmations={props} />);
+    expect(screen.getByText("2 people have confirmed it is still dirty.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm still dirty" }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+
+    rerender(<SpotDetails spot={makeSpot()} onClose={() => {}} confirmations={{ ...props, count: 3, mine: true }} />);
+    expect(screen.getByRole("button", { name: "You confirmed it" })).toBeDisabled();
+  });
+
+  it("does not ask to confirm a clean spot", () => {
+    const confirmations = { count: 0, mine: false, pending: false, onConfirm: () => {} };
+    render(<SpotDetails spot={makeSpot({ status: "clean" })} onClose={() => {}} confirmations={confirmations} />);
+    expect(screen.queryByRole("button", { name: "Confirm still dirty" })).not.toBeInTheDocument();
+  });
 });
